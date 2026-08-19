@@ -14,7 +14,7 @@
 <header class="nav">
   <a class="logo" href="#home">Lion <span>Store</span></a>
   <nav>
-    <a href="#home">Home</a><a href="#products">Products</a><a href="#categories">Categories</a><a href="#contact">Contact</a>
+    <a href="#home">Home</a><a href="#products">Products</a><a href="#categories">Categories</a><a href="#contact">Contact</a><a href="#admin">Dashboard</a>
   </nav>
   <button class="cartBtn" onclick="openCart()" aria-label="Open cart">🛒 <b id="count">0</b></button>
 </header>
@@ -57,7 +57,7 @@
 <section class="section productsSection" id="products">
   <div class="topline">
     <div><div class="eyebrow">OUR STORE</div><h2>Popular products</h2></div>
-    <div class="searchWrap"><span>⌕</span><input id="search" type="search" placeholder="Search products..." oninput="render()"></div>
+    <div class="searchWrap"><span>⌕</span><input id="search" type="search" placeholder="Search products..."></div>
   </div>
   <div class="filters">
     <button class="active" onclick="setCategory('All',this)">All</button>
@@ -68,6 +68,43 @@
   <div class="grid" id="grid"></div>
 </section>
 
+
+<section class="adminSection section" id="admin">
+  <div class="dashTop">
+    <div>
+      <div class="eyebrow">ADMIN PANEL</div>
+      <h2>Store Dashboard</h2>
+      <p>Manage products, inventory and store data from one place.</p>
+    </div>
+    <button class="adminReset" onclick="resetProducts()">Reset demo data</button>
+  </div>
+
+  <div class="statsGrid">
+    <div class="statCard"><span>🛍️</span><small>Total products</small><strong id="statProducts">0</strong></div>
+    <div class="statCard"><span>📦</span><small>In stock</small><strong id="statStock">0</strong></div>
+    <div class="statCard"><span>💰</span><small>Products value</small><strong id="statValue">Rs. 0</strong></div>
+    <div class="statCard"><span>🛒</span><small>Cart items</small><strong id="statCart">0</strong></div>
+  </div>
+
+  <div class="dashboardGrid">
+    <form class="adminForm" id="productForm" onsubmit="addProduct(event)">
+      <div class="formTitle"><span>＋</span><div><strong>Add Product</strong><small>Add a new item to your store</small></div></div>
+      <label>Product name<input id="productName" required placeholder="e.g. iPhone 15"></label>
+      <label>Category<select id="productCategory" required><option value="Phones">Phones</option><option value="Gadgets">Gadgets</option><option value="Fashion">Fashion</option></select></label>
+      <div class="formRow">
+        <label>Sale price<input id="productPrice" type="number" min="0" required placeholder="59900"></label>
+        <label>Old price<input id="productOldPrice" type="number" min="0" placeholder="64900"></label>
+      </div>
+      <label>Product icon<input id="productIcon" maxlength="4" placeholder="📱"></label>
+      <button class="btn adminSubmit" type="submit">Add Product <span>＋</span></button>
+    </form>
+
+    <div class="adminData">
+      <div class="formTitle"><span>▦</span><div><strong>Products</strong><small>Edit or remove store items</small></div></div>
+      <div id="adminProducts"></div>
+    </div>
+  </div>
+</section>
 <section class="contact" id="contact">
   <div><div class="eyebrow">READY TO ORDER?</div><h2>Message us on WhatsApp</h2><p>Send your product list and we can confirm availability and delivery.</p></div>
   <a class="whatsapp" href="https://wa.me/94774662049" target="_blank" rel="noopener">💬 WhatsApp Us <span>↗</span></a>
