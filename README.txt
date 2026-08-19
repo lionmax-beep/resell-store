@@ -1,11 +1,6 @@
-LION STORE V6 - SEPARATE ADMIN PAGES
-
-Upload ALL 4 HTML files to the same GitHub Pages repository:
-- index.html = public store
-- admin.html = separate admin panel
-- add-product.html = separate Add Product page
-- store-data.html = separate Store Data page
-
-Do not keep the old single-file V5 index.html.
-
-Firebase Realtime Database is already configured.
+Lion Store V7
+- index.html: public store with fixed top-left ⋮ menu
+- admin.html: separate Admin Panel
+- add-product.html: separate Add Product page
+- store-data.html: separate Store Data page
+Upload/replace all four HTML files in the GitHub Pages repository.
