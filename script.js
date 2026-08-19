@@ -1,80 +1,22 @@
-const products = [
-  {id:1,name:"Galaxy A16 5G",cat:"Phones",price:58900,old:62900,icon:"📱"},
-  {id:2,name:"Wireless Headphones",cat:"Gadgets",price:7900,old:9500,icon:"🎧"},
-  {id:3,name:"Smart Watch Pro",cat:"Gadgets",price:12500,old:14900,icon:"⌚"},
-  {id:4,name:"Premium Hoodie",cat:"Fashion",price:6500,old:8000,icon:"🧥"},
-  {id:5,name:"Redmi Note Series",cat:"Phones",price:49900,old:53900,icon:"📲"},
-  {id:6,name:"Gaming Mouse",cat:"Gadgets",price:4800,old:5500,icon:"🖱️"},
-  {id:7,name:"Urban Sneakers",cat:"Fashion",price:9900,old:11500,icon:"👟"},
-  {id:8,name:"USB-C Fast Charger",cat:"Gadgets",price:3500,old:4200,icon:"🔌"}
-];
-
-let cart = JSON.parse(localStorage.getItem("resellCart") || "[]");
-
-function money(n){ return "Rs. " + n.toLocaleString("en-LK"); }
-
-function renderProducts(list=products){
-  document.getElementById("productGrid").innerHTML = list.map(p => `
-    <article class="product">
-      <div class="product-img">${p.icon}</div>
-      <div class="product-info">
-        <small>${p.cat}</small>
-        <h3>${p.name}</h3>
-        <div class="price">${money(p.price)} <span class="old">${money(p.old)}</span></div>
-        <button class="add" onclick="addToCart(${p.id})">Add to Cart +</button>
-      </div>
-    </article>`).join("");
-}
-
-function filterProducts(cat, btn){
-  const list = cat === "All" ? products : products.filter(p => p.cat === cat);
-  renderProducts(list);
-  document.querySelectorAll(".filter").forEach(b => b.classList.remove("active"));
-  if(btn) btn.classList.add("active");
-}
-
-function addToCart(id){
-  const p = products.find(x => x.id === id);
-  const item = cart.find(x => x.id === id);
-  if(item) item.qty++;
-  else cart.push({...p, qty:1});
-  saveCart();
-  toggleCart(true);
-}
-
-function removeFromCart(id){
-  cart = cart.filter(x => x.id !== id);
-  saveCart();
-}
-
-function saveCart(){
-  localStorage.setItem("resellCart", JSON.stringify(cart));
-  renderCart();
-}
-
-function renderCart(){
-  const box = document.getElementById("cartItems");
-  const count = cart.reduce((a,x)=>a+x.qty,0);
-  const total = cart.reduce((a,x)=>a+x.price*x.qty,0);
-  document.getElementById("cartCount").textContent = count;
-  document.getElementById("cartTotal").textContent = money(total);
-  box.innerHTML = cart.length ? cart.map(x => `
-    <div class="cart-item">
-      <div><b>${x.icon} ${x.name}</b><br><small>${x.qty} × ${money(x.price)}</small></div>
-      <button class="remove" onclick="removeFromCart(${x.id})">Remove</button>
-    </div>`).join("") : '<div class="empty">Your cart is empty.</div>';
-}
-
-function toggleCart(force){
-  const panel=document.getElementById("cartPanel"), overlay=document.getElementById("overlay");
-  const open = force === true ? true : !panel.classList.contains("open");
-  panel.classList.toggle("open",open); overlay.classList.toggle("show",open);
-}
-
-function checkout(){
-  if(!cart.length) return alert("Your cart is empty.");
-  alert("Demo checkout: connect this button to WhatsApp, Google Forms, or your own backend.");
-}
-
-renderProducts();
-renderCart();
+const WHATSAPP="94774662049";
+const products=[
+{id:1,n:"Galaxy A16 5G",c:"Phones",p:58900,o:62900,i:"📱"},
+{id:2,n:"Redmi Note Series",c:"Phones",p:49900,o:53900,i:"📲"},
+{id:3,n:"Wireless Headphones",c:"Gadgets",p:7900,o:9500,i:"🎧"},
+{id:4,n:"Smart Watch Pro",c:"Gadgets",p:12500,o:14900,i:"⌚"},
+{id:5,n:"Gaming Mouse",c:"Gadgets",p:4800,o:5500,i:"🖱️"},
+{id:6,n:"USB-C Fast Charger",c:"Gadgets",p:3500,o:4200,i:"🔌"},
+{id:7,n:"Premium Hoodie",c:"Fashion",p:6500,o:8000,i:"🧥"},
+{id:8,n:"Urban Sneakers",c:"Fashion",p:9900,o:11500,i:"👟"}];
+let cat="All",cart=JSON.parse(localStorage.getItem("resellxCart")||"[]");
+const money=n=>"Rs. "+n.toLocaleString("en-LK");
+function setCategory(x,btn){cat=x;document.querySelectorAll(".filters button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");render();}
+function render(){const q=(document.getElementById("search").value||"").toLowerCase();const list=products.filter(p=>(cat==="All"||p.c===cat)&&p.n.toLowerCase().includes(q));document.getElementById("grid").innerHTML=list.length?list.map(p=>`<article class="card"><div class="pic">${p.i}</div><div class="info"><small>${p.c}</small><h3>${p.n}</h3><div class="price">${money(p.p)} <span class="old">${money(p.o)}</span></div><button class="add" onclick="add(${p.id})">Add to Cart +</button></div></article>`).join(""):'<div class="notfound">No products found.</div>';renderCart();}
+function add(id){let p=products.find(x=>x.id===id),x=cart.find(x=>x.id===id);x?x.q++:cart.push({...p,q:1});save();openCart();}
+function remove(id){cart=cart.filter(x=>x.id!==id);save();}
+function save(){localStorage.setItem("resellxCart",JSON.stringify(cart));renderCart();}
+function renderCart(){let box=document.getElementById("items");let count=cart.reduce((a,x)=>a+x.q,0),total=cart.reduce((a,x)=>a+x.p*x.q,0);document.getElementById("count").textContent=count;document.getElementById("total").textContent=money(total);box.innerHTML=cart.length?cart.map(x=>`<div class="cartItem"><div><b>${x.i} ${x.n}</b><br><small>${x.q} × ${money(x.p)}</small></div><button class="remove" onclick="remove(${x.id})">Remove</button></div>`).join(""):'<div class="empty">Your cart is empty.</div>';}
+function openCart(){document.getElementById("cart").classList.add("open");document.getElementById("overlay").classList.add("show");}
+function closeCart(){document.getElementById("cart").classList.remove("open");document.getElementById("overlay").classList.remove("show");}
+function orderWhatsApp(){if(!cart.length){alert("Your cart is empty.");return}let text="Hello Lion Store! I want to order:%0A"+cart.map(x=>`• ${x.n} x${x.q} - ${money(x.p*x.q)}`).join("%0A")+`%0A%0ATotal: ${money(cart.reduce((a,x)=>a+x.p*x.q,0))}`;window.open(`https://wa.me/${WHATSAPP}?text=${text}`,"_blank");}
+render();
