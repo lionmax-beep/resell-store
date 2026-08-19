@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Modern reselling marketplace">
+  <title>ReSellX | Modern Reselling Store</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <a class="logo" href="#">ReSell<span>X</span></a>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#products">Products</a>
+      <a href="#categories">Categories</a>
+      <a href="#about">About</a>
+    </nav>
+    <button class="cart-btn" onclick="toggleCart()">Cart <span id="cartCount">0</span></button>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <p class="eyebrow">SMART RESELLING • BETTER DEALS</p>
+        <h1>Find it.<br><span>Flip it.</span><br>Love it.</h1>
+        <p class="hero-text">A clean, modern marketplace for phones, gadgets, fashion and everyday products.</p>
+        <a class="primary-btn" href="#products">Shop Now →</a>
+      </div>
+      <div class="hero-card">
+        <div class="floating-tag">🔥 Trending</div>
+        <div class="product-visual">📱</div>
+        <h3>Premium Gadgets</h3>
+        <p>Quality products • Great prices</p>
+      </div>
+    </section>
+
+    <section class="section" id="categories">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">EXPLORE</p>
+          <h2>Shop by category</h2>
+        </div>
+      </div>
+      <div class="category-grid">
+        <button onclick="filterProducts('All')">🛍️ <b>All</b><small>Everything</small></button>
+        <button onclick="filterProducts('Phones')">📱 <b>Phones</b><small>Smart devices</small></button>
+        <button onclick="filterProducts('Gadgets')">🎧 <b>Gadgets</b><small>Tech accessories</small></button>
+        <button onclick="filterProducts('Fashion')">👕 <b>Fashion</b><small>New styles</small></button>
+      </div>
+    </section>
+
+    <section class="section" id="products">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">OUR PICKS</p>
+          <h2>Featured products</h2>
+        </div>
+        <div class="filter-buttons">
+          <button class="filter active" onclick="filterProducts('All', this)">All</button>
+          <button class="filter" onclick="filterProducts('Phones', this)">Phones</button>
+          <button class="filter" onclick="filterProducts('Gadgets', this)">Gadgets</button>
+          <button class="filter" onclick="filterProducts('Fashion', this)">Fashion</button>
+        </div>
+      </div>
+      <div class="products" id="productGrid"></div>
+    </section>
+
+    <section class="trust" id="about">
+      <div><strong>⚡ Fast Deals</strong><span>Fresh products & offers</span></div>
+      <div><strong>🛡️ Trusted Selling</strong><span>Simple and transparent</span></div>
+      <div><strong>📦 Easy Delivery</strong><span>Order-ready storefront</span></div>
+    </section>
+  </main>
+
+  <aside class="cart-panel" id="cartPanel">
+    <div class="cart-head">
+      <h2>Your Cart</h2>
+      <button onclick="toggleCart()">✕</button>
+    </div>
+    <div id="cartItems"></div>
+    <div class="cart-footer">
+      <div><span>Total</span><strong id="cartTotal">Rs. 0</strong></div>
+      <button class="primary-btn full" onclick="checkout()">Place Order</button>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay" onclick="toggleCart()"></div>
+
+  <footer>
+    <div class="logo">ReSell<span>X</span></div>
+    <p>© 2026 ReSellX. Built for modern resellers.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
