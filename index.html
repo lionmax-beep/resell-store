@@ -1,125 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0a0d11">
-<title>Lion Store | Smart Shopping</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lion Store | Online Reselling Store</title><link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="nav">
-  <a class="logo" href="#home">Lion <span>Store</span></a>
-  <nav>
-    <a href="#home">Home</a><a href="#products">Products</a><a href="#categories">Categories</a><a href="#contact">Contact</a><a href="#admin">Dashboard</a>
-  </nav>
-  <button class="cartBtn" onclick="openCart()" aria-label="Open cart">🛒 <b id="count">0</b></button>
-</header>
+<header class="nav"><a class="logo" href="#">Lion <span>Store</span></a>
+<nav><a href="#home">Home</a><a href="#products">Products</a><a href="#categories">Categories</a><a href="#contact">Contact</a></nav>
+<button class="cartBtn" onclick="openCart()">🛒 <b id="count">0</b></button></header>
 
-<main>
-<section class="hero" id="home">
-  <div class="heroCopy">
-    <div class="eyebrow"><span></span> SMART SHOPPING • BEST DEALS</div>
-    <h1>Buy smart.<br><em>Resell better.</em></h1>
-    <p class="sub">Phones, gadgets and fashion at competitive prices. Find your next deal today.</p>
-    <div class="heroActions">
-      <a class="btn" href="#products">Shop Products <span>→</span></a>
-      <a class="ghostBtn" href="#categories">Explore categories</a>
-    </div>
-    <div class="trust">
-      <div><strong>8+</strong><small>Products</small></div>
-      <div><strong>3</strong><small>Categories</small></div>
-      <div><strong>24/7</strong><small>WhatsApp</small></div>
-    </div>
-  </div>
-  <div class="heroVisual">
-    <div class="glow"></div>
-    <div class="phone">📱</div>
-    <span class="trend">TRENDING NOW</span>
-    <strong>Premium Gadgets</strong>
-    <small>Fresh deals • Ready to order</small>
-  </div>
+<section class="hero" id="home"><div><p class="tag">SMART SHOPPING • BEST DEALS</p>
+<h1>Buy smart.<br><span>Resell better.</span></h1><p class="sub">Phones, gadgets and fashion at competitive prices. Find your next deal today.</p>
+<a class="btn" href="#products">Shop Products →</a></div>
+<div class="heroVisual"><div>📱</div><small>Trending now</small><strong>Premium Gadgets</strong></div></section>
+
+<section class="section" id="categories"><p class="tag">EXPLORE</p><h2>Categories</h2>
+<div class="cats">
+<button onclick="setCategory('All')">🛍️<b>All</b><small>Everything</small></button>
+<button onclick="setCategory('Phones')">📱<b>Phones</b><small>Smartphones</small></button>
+<button onclick="setCategory('Gadgets')">🎧<b>Gadgets</b><small>Accessories</small></button>
+<button onclick="setCategory('Fashion')">👕<b>Fashion</b><small>New styles</small></button>
+</div></section>
+
+<section class="section" id="products"><div class="topline"><div><p class="tag">OUR STORE</p><h2>Products</h2></div>
+<input id="search" type="search" placeholder="🔎 Search products..." oninput="render()"></div>
+<div class="filters"><button class="active" onclick="setCategory('All',this)">All</button><button onclick="setCategory('Phones',this)">Phones</button><button onclick="setCategory('Gadgets',this)">Gadgets</button><button onclick="setCategory('Fashion',this)">Fashion</button></div>
+<div class="status" id="dbStatus">Connecting to Lion Store database…</div>
+<div class="grid" id="grid"></div></section>
+<section class="section admin" id="admin">
+<p class="tag">STORE MANAGEMENT</p><h2>Dashboard</h2>
+<div class="adminGrid">
+<div class="panel"><h3>➕ Add Product</h3>
+<form onsubmit="addProduct(event)">
+<label>Product name<input id="productName" required placeholder="e.g. iPhone 15"></label>
+<label>Category<select id="productCategory"><option>Phones</option><option>Gadgets</option><option>Fashion</option></select></label>
+<label>Price<input id="productPrice" type="number" min="0" required></label>
+<label>Old price<input id="productOldPrice" type="number" min="0"></label>
+<label>Icon<input id="productIcon" maxlength="4" placeholder="📱"></label>
+<label>Image URL <small>(optional)</small><input id="productImage" type="url" placeholder="https://..."></label>
+<button class="btn full" type="submit">Save Product</button>
+</form></div>
+<div class="panel"><h3>📝 Add Store Data</h3>
+<form onsubmit="addStoreData(event)">
+<label>Data name<input id="dataKey" required placeholder="Delivery fee"></label>
+<label>Data value<input id="dataValue" required placeholder="Rs. 350"></label>
+<button class="btn full" type="submit">Save Data</button>
+</form>
+<div id="storeDataList" class="dataList"></div></div></div>
+<div class="panel"><h3>Products in database</h3><div id="adminProducts" class="dataList">Loading…</div></div>
 </section>
 
-<section class="section" id="categories">
-  <div class="sectionHead"><div><div class="eyebrow">EXPLORE</div><h2>Shop by category</h2></div></div>
-  <div class="cats">
-    <button onclick="setCategory('All')"><span>🛍️</span><b>All Products</b><small>Everything</small></button>
-    <button onclick="setCategory('Phones')"><span>📱</span><b>Phones</b><small>Smartphones</small></button>
-    <button onclick="setCategory('Gadgets')"><span>🎧</span><b>Gadgets</b><small>Accessories</small></button>
-    <button onclick="setCategory('Fashion')"><span>👕</span><b>Fashion</b><small>New styles</small></button>
-  </div>
-</section>
-
-<section class="section productsSection" id="products">
-  <div class="topline">
-    <div><div class="eyebrow">OUR STORE</div><h2>Popular products</h2></div>
-    <div class="searchWrap"><span>⌕</span><input id="search" type="search" placeholder="Search products..."></div>
-  </div>
-  <div class="filters">
-    <button class="active" onclick="setCategory('All',this)">All</button>
-    <button onclick="setCategory('Phones',this)">Phones</button>
-    <button onclick="setCategory('Gadgets',this)">Gadgets</button>
-    <button onclick="setCategory('Fashion',this)">Fashion</button>
-  </div>
-  <div class="grid" id="grid"></div>
-</section>
-
-
-<section class="adminSection section" id="admin">
-  <div class="dashTop">
-    <div>
-      <div class="eyebrow">ADMIN PANEL</div>
-      <h2>Store Dashboard</h2>
-      <p>Manage products, inventory and store data from one place.</p>
-    </div>
-    <button class="adminReset" onclick="resetProducts()">Reset demo data</button>
-  </div>
-
-  <div class="statsGrid">
-    <div class="statCard"><span>🛍️</span><small>Total products</small><strong id="statProducts">0</strong></div>
-    <div class="statCard"><span>📦</span><small>In stock</small><strong id="statStock">0</strong></div>
-    <div class="statCard"><span>💰</span><small>Products value</small><strong id="statValue">Rs. 0</strong></div>
-    <div class="statCard"><span>🛒</span><small>Cart items</small><strong id="statCart">0</strong></div>
-  </div>
-
-  <div class="dashboardGrid">
-    <form class="adminForm" id="productForm" onsubmit="addProduct(event)">
-      <div class="formTitle"><span>＋</span><div><strong>Add Product</strong><small>Add a new item to your store</small></div></div>
-      <label>Product name<input id="productName" required placeholder="e.g. iPhone 15"></label>
-      <label>Category<select id="productCategory" required><option value="Phones">Phones</option><option value="Gadgets">Gadgets</option><option value="Fashion">Fashion</option></select></label>
-      <div class="formRow">
-        <label>Sale price<input id="productPrice" type="number" min="0" required placeholder="59900"></label>
-        <label>Old price<input id="productOldPrice" type="number" min="0" placeholder="64900"></label>
-      </div>
-      <label>Product icon<input id="productIcon" maxlength="4" placeholder="📱"></label>
-      <button class="btn adminSubmit" type="submit">Add Product <span>＋</span></button>
-    </form>
-
-    <div class="adminData">
-      <div class="formTitle"><span>▦</span><div><strong>Products</strong><small>Edit or remove store items</small></div></div>
-      <div id="adminProducts"></div>
-    </div>
-  </div>
-</section>
-<section class="contact" id="contact">
-  <div><div class="eyebrow">READY TO ORDER?</div><h2>Message us on WhatsApp</h2><p>Send your product list and we can confirm availability and delivery.</p></div>
-  <a class="whatsapp" href="https://wa.me/94774662049" target="_blank" rel="noopener">💬 WhatsApp Us <span>↗</span></a>
-</section>
-</main>
+<section class="contact" id="contact"><div><p class="tag">READY TO ORDER?</p><h2>Message us on WhatsApp</h2><p>Send your product list and we can confirm availability and delivery.</p></div>
+<a class="whatsapp" href="https://wa.me/94774662049" target="_blank">💬 WhatsApp Us</a></section>
 
 <footer><div class="logo">Lion <span>Store</span></div><p>© 2026 Lion Store • Online Reselling Store</p></footer>
-
 <div class="overlay" id="overlay" onclick="closeCart()"></div>
-<aside class="cart" id="cart">
-  <div class="cartHead"><div><div class="eyebrow">YOUR BAG</div><h2>My Cart</h2></div><button onclick="closeCart()" aria-label="Close cart">✕</button></div>
-  <div id="items"></div>
-  <div class="cartBottom"><div><span>Total</span><b id="total">Rs. 0</b></div><button class="btn full" onclick="orderWhatsApp()">Order on WhatsApp →</button></div>
-</aside>
-
-<script src="script.js"></script>
-</body>
-</html>
+<aside class="cart" id="cart"><div class="cartHead"><h2>My Cart</h2><button onclick="closeCart()">✕</button></div><div id="items"></div>
+<div class="cartBottom"><div><span>Total</span><b id="total">Rs. 0</b></div><button class="btn full" onclick="orderWhatsApp()">Order on WhatsApp</button></div></aside>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="script.js"></script></body></html>

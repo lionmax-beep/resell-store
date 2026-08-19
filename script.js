@@ -1,32 +1,46 @@
 const WHATSAPP="94774662049";
-const defaultProducts=[
-{id:1,n:"Galaxy A16 5G",c:"Phones",p:58900,o:62900,i:"📱",img:""},
-{id:2,n:"Redmi Note Series",c:"Phones",p:49900,o:53900,i:"📲",img:""},
-{id:3,n:"Wireless Headphones",c:"Gadgets",p:7900,o:9500,i:"🎧",img:""},
-{id:4,n:"Smart Watch Pro",c:"Gadgets",p:12500,o:14900,i:"⌚",img:""},
-{id:5,n:"Gaming Mouse",c:"Gadgets",p:4800,o:5500,i:"🖱️",img:""},
-{id:6,n:"USB-C Fast Charger",c:"Gadgets",p:3500,o:4200,i:"🔌",img:""},
-{id:7,n:"Premium Hoodie",c:"Fashion",p:6500,o:8000,i:"🧥",img:""},
-{id:8,n:"Urban Sneakers",c:"Fashion",p:9900,o:11500,i:"👟",img:""}];
-let products=[]; let cat="All"; let cart=JSON.parse(localStorage.getItem("lionStoreCart")||"[]"); let backendReady=false;
+const firebaseConfig={
+apiKey:"AIzaSyDy2Ljwj7hg1tsopcC39gvhngxwnVorNtU",
+authDomain:"lion-store-f2c4a.firebaseapp.com",
+projectId:"lion-store-f2c4a",
+storageBucket:"lion-store-f2c4a.firebasestorage.app",
+messagingSenderId:"37752415149",
+appId:"1:37752415149:web:83fb03e7265db23e00f724",
+measurementId:"G-S3SDFPPS5K",
+databaseURL:"https://lion-store-f2c4a-default-rtdb.firebaseio.com/"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+let products=[],cat="All",cart=JSON.parse(localStorage.getItem("resellxCart")||"[]");
 const money=n=>"Rs. "+Number(n||0).toLocaleString("en-LK");
-const esc=v=>String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
-function saveCart(){localStorage.setItem("lionStoreCart",JSON.stringify(cart));}
-function localProducts(){try{return JSON.parse(localStorage.getItem("lionStoreProducts"))||[...defaultProducts]}catch{return [...defaultProducts]}}
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function setStatus(t,ok=false){const e=document.getElementById("dbStatus");e.textContent=t;e.className="status "+(ok?"ok":"");}
+db.ref("products").on("value",snap=>{
+ const data=snap.val()||{}; products=Object.entries(data).map(([id,p])=>({id,...p}));
+ setStatus(`Connected • ${products.length} product${products.length===1?"":"s"}`,true); render(); renderAdminProducts();
+},err=>setStatus("Database connection failed: "+err.message));
 function setCategory(x,btn){cat=x;document.querySelectorAll(".filters button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");render();}
-function render(){const q=(document.getElementById("search")?.value||"").trim().toLowerCase();const list=products.filter(p=>(cat==="All"||p.c===cat)&&(!q||p.n.toLowerCase().includes(q)||p.c.toLowerCase().includes(q)));const g=document.getElementById("grid");if(g)g.innerHTML=list.length?list.map(p=>`<article class="card"><div class="pic">${p.img?`<img src="${p.img}" alt="${esc(p.n)}">`:p.i||"🛍️"}</div><div class="info"><small>${esc(p.c).toUpperCase()}</small><h3>${esc(p.n)}</h3><div class="price">${money(p.p)} <span class="old">${money(p.o)}</span></div><button class="add" onclick="add(${JSON.stringify(p.id)})">Add to Cart +</button></div></article>`).join(""):'<div class="notfound">No products found.</div>';renderCart();renderDashboard();renderAdminProducts();}
-function add(id){const p=products.find(x=>String(x.id)===String(id));if(!p)return;const x=cart.find(x=>String(x.id)===String(id));x?x.q++:cart.push({...p,q:1});saveCart();renderCart();openCart();}
-function remove(id){cart=cart.filter(x=>String(x.id)!==String(id));saveCart();render();}
-function renderCart(){const box=document.getElementById("items"),count=cart.reduce((a,x)=>a+x.q,0),total=cart.reduce((a,x)=>a+x.p*x.q,0);if(document.getElementById("count"))document.getElementById("count").textContent=count;if(document.getElementById("total"))document.getElementById("total").textContent=money(total);if(box)box.innerHTML=cart.length?cart.map(x=>`<div class="cartItem"><div><b>${x.i||"🛍️"} ${esc(x.n)}</b><br><small>${x.q} × ${money(x.p)}</small></div><button class="remove" onclick="remove(${JSON.stringify(x.id)})">Remove</button></div>`).join(""):'<div class="empty">Your cart is empty.</div>';}
-function openCart(){document.getElementById("cart")?.classList.add("open");document.getElementById("overlay")?.classList.add("show");} function closeCart(){document.getElementById("cart")?.classList.remove("open");document.getElementById("overlay")?.classList.remove("show");}
-function orderWhatsApp(){if(!cart.length)return alert("Your cart is empty.");const lines=cart.map(x=>`• ${x.n} x${x.q} - ${money(x.p*x.q)}`).join("%0A");const total=money(cart.reduce((a,x)=>a+x.p*x.q,0));window.open(`https://wa.me/${WHATSAPP}?text=Hello%20Lion%20Store!%0A${lines}%0A%0ATotal:%20${encodeURIComponent(total)}`,"_blank");}
-async function adminLogin(e){e?.preventDefault();try{const email=document.getElementById("adminEmail").value.trim(),pw=document.getElementById("adminPassword").value;if(!window.LionBackend?.configured)throw Error("Firebase is not configured. Add your config first.");await window.LionBackend.login(email,pw);setAuthStatus("Signed in. Admin access ready.");await loadProducts();}catch(err){setAuthStatus(err.message||"Login failed");}}
-async function adminLogout(e){e?.preventDefault();if(window.LionBackend?.logout)await window.LionBackend.logout();setAuthStatus("Signed out.");}
-function setAuthStatus(t){const e=document.getElementById("authStatus");if(e)e.textContent=t;}
-async function loadProducts(){if(window.LionBackend?.configured){try{products=await window.LionBackend.getProducts();if(!products.length){products=[...defaultProducts];setAuthStatus("Backend connected. Add your first product from Dashboard.");}else setAuthStatus("Backend connected. Products are shared online.");backendReady=true;render();return;}catch(e){setAuthStatus("Backend read error: "+e.message);}}products=localProducts();render();}
-async function addProduct(e){e.preventDefault();const name=document.getElementById("productName").value.trim(),category=document.getElementById("productCategory").value,price=Number(document.getElementById("productPrice").value),oldPrice=Number(document.getElementById("productOldPrice").value)||price,file=document.getElementById("productImage")?.files?.[0];if(!name||!Number.isFinite(price)||price<0)return alert("Enter product name and valid price.");try{if(backendReady){await window.LionBackend.addProduct({name,category,price,oldPrice},file);}else{products.push({id:Date.now(),n:name,c:category,p:price,o:oldPrice,i:"🛍️",img:""});localStorage.setItem("lionStoreProducts",JSON.stringify(products));}document.getElementById("productForm").reset();document.getElementById("imagePreview").innerHTML="No image selected";await loadProducts();alert("Product added successfully!");}catch(err){alert("Could not add product: "+err.message);}}
-async function deleteProduct(id,imagePath){try{if(backendReady)await window.LionBackend.deleteProduct(id,imagePath);else{products=products.filter(p=>String(p.id)!==String(id));localStorage.setItem("lionStoreProducts",JSON.stringify(products));}await loadProducts();}catch(err){alert("Could not delete product: "+err.message);}}
-function resetProducts(){if(confirm("Reset demo products? This only resets local demo data, not your Firebase database.")){products=[...defaultProducts];render();}}
-function renderDashboard(){const a=document.getElementById("statProducts");if(!a)return;document.getElementById("statProducts").textContent=products.length;document.getElementById("statStock").textContent=products.length;document.getElementById("statValue").textContent=money(products.reduce((s,p)=>s+p.p,0));document.getElementById("statCart").textContent=cart.reduce((s,x)=>s+x.q,0);}
-function renderAdminProducts(){const b=document.getElementById("adminProducts");if(!b)return;b.innerHTML=products.length?products.map(p=>`<div class="dataItem"><div class="dataInfo"><span class="dataIcon">${p.img?`<img src="${p.img}" alt="">`:p.i||"🛍️"}</span><div><b>${esc(p.n)}</b><small>${esc(p.c)} • ${money(p.p)}</small></div></div><button class="deleteProduct" onclick="deleteProduct(${JSON.stringify(p.id)},${JSON.stringify(p.imagePath||"")})">Delete</button></div>`).join(""):'<div class="noData">No products yet.</div>';}
-document.addEventListener("DOMContentLoaded",()=>{const s=document.getElementById("search");if(s)s.addEventListener("input",render);const f=document.getElementById("productImage");if(f)f.addEventListener("change",()=>{const file=f.files?.[0],p=document.getElementById("imagePreview");if(!file){p.textContent="No image selected";return;}p.innerHTML=`<img src="${URL.createObjectURL(file)}" alt="Preview">`;});window.addEventListener("lionBackendReady",()=>{loadProducts();window.LionBackend.watchAuth?.(u=>{setAuthStatus(u?`Signed in: ${u.email}`:"Not signed in");});});if(window.LionBackend?.configured)loadProducts();else{products=localProducts();render();setAuthStatus("Firebase config required for online backend.");}});
+function render(){
+ const q=(document.getElementById("search").value||"").toLowerCase();
+ const list=products.filter(p=>(cat==="All"||p.c===cat)&&(`${p.n||""} ${p.c||""}`).toLowerCase().includes(q));
+ document.getElementById("grid").innerHTML=list.length?list.map(p=>`<article class="card"><div class="pic">${p.img?`<img src="${esc(p.img)}" alt="${esc(p.n)}">`:esc(p.i||"🛍️")}</div><div class="info"><small>${esc(p.c)}</small><h3>${esc(p.n)}</h3><div class="price">${money(p.p)} <span class="old">${money(p.o||p.p)}</span></div><button class="add" onclick="add('${esc(p.id)}')">Add to Cart +</button></div></article>`).join(""):'<div class="notfound">No products found.</div>';
+ renderCart();
+}
+async function addProduct(e){
+ e.preventDefault();
+ const price=Number(productPrice.value);
+ const p={n:productName.value.trim(),c:productCategory.value,p:price,o:Number(productOldPrice.value)||price,i:productIcon.value.trim()||"🛍️",img:productImage.value.trim(),createdAt:Date.now()};
+ try{await db.ref("products").push(p);e.target.reset();alert("Product saved to Firebase.");}catch(err){alert("Could not save: "+err.message);}
+}
+async function deleteProduct(id){if(!confirm("Delete this product?"))return;try{await db.ref("products/"+id).remove();}catch(e){alert(e.message);}}
+function renderAdminProducts(){const b=document.getElementById("adminProducts");if(!b)return;b.innerHTML=products.length?products.map(p=>`<div class="dataRow"><span>${p.img?`<img src="${esc(p.img)}" alt="">`:esc(p.i||"🛍️")} <b>${esc(p.n)}</b><small>${esc(p.c)} • ${money(p.p)}</small></span><button class="remove" onclick="deleteProduct('${esc(p.id)}')">Delete</button></div>`).join(""):"No products yet.";}
+async function addStoreData(e){e.preventDefault();const key=dataKey.value.trim(),value=dataValue.value.trim();if(!key||!value)return;const safe=key.replace(/[.#$[\]/]/g,"_");try{await db.ref("storeData/"+safe).set({name:key,value,updatedAt:Date.now()});e.target.reset();}catch(err){alert("Could not save: "+err.message);}}
+db.ref("storeData").on("value",snap=>{const d=snap.val()||{};document.getElementById("storeDataList").innerHTML=Object.entries(d).map(([k,v])=>`<div class="dataRow"><span><b>${esc(v.name||k)}</b><small>${esc(v.value)}</small></span></div>`).join("")||"No store data yet.";});
+function add(id){let p=products.find(x=>x.id===id),x=cart.find(x=>x.id===id);if(!p)return;x?x.q++:cart.push({...p,q:1});save();openCart();}
+function remove(id){cart=cart.filter(x=>x.id!==id);save();}
+function save(){localStorage.setItem("resellxCart",JSON.stringify(cart));renderCart();}
+function renderCart(){let box=document.getElementById("items"),count=cart.reduce((a,x)=>a+x.q,0),total=cart.reduce((a,x)=>a+x.p*x.q,0);document.getElementById("count").textContent=count;document.getElementById("total").textContent=money(total);box.innerHTML=cart.length?cart.map(x=>`<div class="cartItem"><div><b>${esc(x.i||"🛍️")} ${esc(x.n)}</b><br><small>${x.q} × ${money(x.p)}</small></div><button class="remove" onclick="remove('${esc(x.id)}')">Remove</button></div>`).join(""):'<div class="empty">Your cart is empty.</div>';}
+function openCart(){document.getElementById("cart").classList.add("open");document.getElementById("overlay").classList.add("show");}
+function closeCart(){document.getElementById("cart").classList.remove("open");document.getElementById("overlay").classList.remove("show");}
+function orderWhatsApp(){if(!cart.length){alert("Your cart is empty.");return}let text="Hello Lion Store! I want to order:%0A"+cart.map(x=>`• ${x.n} x${x.q} - ${money(x.p*x.q)}`).join("%0A")+`%0A%0ATotal: ${money(cart.reduce((a,x)=>a+x.p*x.q,0))}`;window.open(`https://wa.me/${WHATSAPP}?text=${text}`,"_blank");}
+render();
