@@ -20,3 +20,5 @@ async function loadMenu(){
 }
 function toggleMenu(){document.getElementById('sideMenu')?.classList.toggle('open');document.getElementById('menuShade')?.classList.toggle('show');}
 loadMenu();
+
+// V8.4 checkout is available at checkout.html

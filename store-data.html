@@ -1,8 +1,31 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://www.google.com; frame-src https://www.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self';"><title>Store Data | Lion Store</title><link rel="stylesheet" href="styles.css"></head><body>
-<header class="nav"><a class="logo" href="index.html">Lion <span>Store</span></a><nav><a href="index.html">Home</a><a href="products.html">Products</a></nav><a class="back" href="admin.html">← Admin</a></header><main class="page"><p class="tag">STORE DATA</p><h1>Store Data</h1><p class="sub">Manage delivery fees, contact details and other store information.</p><div id="denied" class="panel hidden"><h2>Access denied</h2><p class="sub">Your admin account does not have permission to manage store data.</p><a class="btn" href="admin.html">Back to Admin</a></div><div id="formBox" class="hidden"><div class="panel"><form id="dataForm"><label>Data name<input id="dataKey" required placeholder="Delivery fee"></label><label>Data value<input id="dataValue" required placeholder="Rs. 350"></label><button class="btn full" type="submit">Save Store Data</button></form><div id="msg" class="notice">Ready.</div></div><div class="panel"><h2>Saved Data</h2><div id="dataList">Loading…</div></div></div></main>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script><script src="firebase.js"></script><script src="auth.js"></script><script>
-requireAdmin().then(a=>{if(!a)return;if(!can('manageStoreData')){denied.classList.remove('hidden');return}formBox.classList.remove('hidden');loadData();});
-dataForm.addEventListener('submit',async e=>{e.preventDefault();if(!can('manageStoreData'))return;const key=dataKey.value.trim(),value=dataValue.value.trim();if(!key||!value)return;try{await db.ref('storeData/'+safeKey(key)).set({name:key,value,updatedAt:Date.now(),updatedBy:currentAdmin.uid});e.target.reset();msg.textContent='✅ Store data saved.';loadData()}catch(err){msg.textContent='❌ '+err.message}});
-async function loadData(){const s=await db.ref('storeData').once('value'),d=s.val()||{};dataList.innerHTML=Object.entries(d).map(([k,v])=>`<div class="dataRow"><span><b>${esc(v.name||k)}</b><small>${esc(v.value||'')}</small></span><button class="remove" onclick="deleteData('${esc(k)}')">Delete</button></div>`).join('')||'No store data yet.'}
-async function deleteData(k){if(!can('manageStoreData')||!confirm('Delete this store data?'))return;await db.ref('storeData/'+k).remove();loadData()}
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lion Store | Store Data</title><link rel="stylesheet" href="styles.css">
+</head><body>
+<header class="nav"><a class="logo" href="index.html">Lion <span>Store</span></a><a href="admin.html">← Admin</a></header>
+<main class="container" style="max-width:900px;margin:30px auto;padding:16px">
+<h1>Store Data</h1><p>Manage basic store information saved in Firebase.</p>
+<section class="card">
+<label>Store Name</label><input id="storeName" placeholder="Lion Store">
+<label>Phone</label><input id="storePhone" placeholder="+94...">
+<label>Address</label><textarea id="storeAddress"></textarea>
+<label>Post Code</label><input id="storePostCode">
+<label>WhatsApp</label><input id="storeWhatsapp" placeholder="+94...">
+<div style="margin-top:15px"><button id="save" class="btn">Save Store Data</button></div>
+<p id="status"></p>
+</section></main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase.js"></script><script src="auth.js"></script>
+<script>
+const ids=['storeName','storePhone','storeAddress','storePostCode','storeWhatsapp'];
+function load(){db.ref('settings/storeData').once('value').then(s=>{const d=s.val()||{};ids.forEach(k=>document.getElementById(k).value=d[k]||'')}).catch(e=>status('Could not load store data.',false))}
+function status(t,ok=true){const x=document.getElementById('status');x.textContent=t;x.style.color=ok?'#72df9b':'#ff7777'}
+document.getElementById('save').onclick=async()=>{
+ const user=firebase.auth().currentUser;if(!user){location.href='admin.html';return}
+ const d={};ids.forEach(k=>d[k]=document.getElementById(k).value.trim());
+ try{await db.ref('settings/storeData').update(d);status('Store data saved.')}catch(e){status('Save failed. Check admin permission and Firebase rules.',false)}
+};
+firebase.auth().onAuthStateChanged(u=>{if(u)load();else location.href='admin.html'});
 </script></body></html>
