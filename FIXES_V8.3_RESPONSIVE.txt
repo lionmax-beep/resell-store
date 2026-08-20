@@ -1,0 +1,27 @@
+LION STORE V8.3 — MOBILE + DESKTOP LAYOUT FIX
+
+1. Product grid & category grid now use a fluid layout (auto-fill/minmax)
+   instead of fixed column counts. This means it looks right at ANY screen
+   width — small phone, big phone, tablet, laptop, ultra-wide desktop —
+   not just the few widths the old breakpoints covered.
+
+2. Added a small-phone breakpoint (<=480px) that shrinks the hero section,
+   headings, product cards, and admin buttons so nothing feels oversized
+   or cramped on compact phones.
+
+3. Fixed horizontal-scroll risk — page can no longer scroll sideways on
+   narrow screens (images and long content were occasionally causing a
+   few extra pixels of overflow).
+
+4. Admin panel rows (products/categories/menu/admins lists) now wrap
+   properly instead of squeezing long emails/names into one line and
+   overflowing off-screen on phones.
+
+5. Fixed a side effect of the earlier CSP (Content-Security-Policy) fix —
+   it was silently blocking the Google Fonts (Inter) used across the
+   site, so it would fall back to a plain system font. CSP now explicitly
+   allows fonts.googleapis.com / fonts.gstatic.com.
+
+Test by resizing your browser window from narrow to wide, and by opening
+the site on an actual phone — layout should adjust smoothly with no
+horizontal scrolling and no oversized/cramped elements at any width.
