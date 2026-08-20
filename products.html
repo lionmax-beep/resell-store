@@ -1,17 +1,95 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://www.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://www.google.com; frame-src https://www.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self';"><title>Products | Lion Store</title><link rel="stylesheet" href="styles.css"></head><body>
-<button class="menuDots" onclick="toggleMenu()">⋮</button><div class="sideMenu" id="sideMenu"><div class="menuHead"><strong>Lion Store</strong><button onclick="toggleMenu()">✕</button></div><div class="menuSection">CATEGORIES</div><div id="menuCategories"></div><div class="menuLine"></div><div class="menuSection">STORE</div><div id="menuLinks"></div><div class="menuLine"></div><a class="adminLink" href="admin.html">⚙️ <span>Admin Panel</span><b>›</b></a></div><div class="menuShade" id="menuShade" onclick="toggleMenu()"></div>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://www.google.com; frame-src https://www.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self';">
+<title>Products | Lion Store</title><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button class="menuDots" aria-label="Open menu" onclick="toggleMenu()">⋮</button>
+<div class="sideMenu" id="sideMenu">
+  <div class="menuHead"><strong>Lion <span style="color:var(--green)">Store</span></strong><button aria-label="Close menu" onclick="closeMenu()">✕</button></div>
+  <div class="menuSection">CATEGORIES</div><div id="menuCategories"></div>
+  <div class="menuLine"></div><div class="menuSection">STORE</div><div id="menuLinks"></div>
+  <div class="menuLine"></div><a class="adminLink" href="admin.html">⚙️ <span class="menuLabel">Admin Panel</span><b>›</b></a>
+</div>
+<div class="menuShade" id="menuShade" onclick="closeMenu()"></div>
+
 <header class="nav"><a class="logo" href="index.html">Lion <span>Store</span></a><nav><a href="index.html">Home</a><a href="products.html">Products</a></nav><button class="cartBtn" onclick="openCart()">🛒 <b id="count">0</b></button></header>
-<main class="page"><p class="tag">OUR STORE</p><h1>Products</h1><div class="topline"><p class="sub">Only products live on this page. Choose a category from the menu or search.</p><input id="search" type="search" placeholder="🔎 Search products..."></div><div class="filters" id="filters"></div><div class="grid" id="grid">Loading…</div></main>
-<div class="overlay" id="overlay" onclick="closeCart()"></div><aside class="cart" id="cart"><div class="cartHead"><strong>Your Cart</strong><button onclick="closeCart()">✕</button></div><div id="items"></div><div class="cartBottom"><div><span>Total</span><b id="total">Rs. 0</b></div><button class="btn full" onclick="orderWhatsApp()">Order on WhatsApp</button></div></aside>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script><script src="firebase.js"></script><script src="menu.js"></script><script>
-let products=[],cat=new URLSearchParams(location.search).get('cat')||'All',cart=(JSON.parse(localStorage.getItem('lionStoreCart')||'[]')).map(x=>({id:x.id,q:x.q}));
-async function loadFilters(){let cats=defaultCategories;try{const s=await db.ref('settings/categories').once('value');if(s.exists())cats=Object.entries(s.val()).map(([id,v])=>({id,...v})).filter(x=>x.enabled!==false);}catch(e){}document.getElementById('filters').innerHTML=[{name:'All'},...cats].map(c=>`<button class="${cat===c.name?'active':''}" onclick="setCategory('${esc(c.name)}')">${esc(c.name)}</button>`).join('');}
-function setCategory(x){cat=x;loadFilters();render();}db.ref('products').on('value',s=>{products=Object.entries(s.val()||{}).map(([id,p])=>({id,...p}));render();});document.getElementById('search').addEventListener('input',render);
-function render(){const q=document.getElementById('search').value.toLowerCase();const list=products.filter(p=>(cat==='All'||p.c===cat)&&(`${p.n||''} ${p.c||''}`).toLowerCase().includes(q));document.getElementById('grid').innerHTML=list.length?list.map(p=>`<article class="card"><div class="pic">${p.img?`<img src="${esc(p.img)}" alt="${esc(p.n)}">`:esc(p.i||'🛍️')}</div><div class="info"><small>${esc(p.c||'')}</small><h3>${esc(p.n||'Unnamed')}</h3><div class="price">${money(p.p)} ${Number(p.o)>Number(p.p)?`<span class="old">${money(p.o)}</span>`:''}</div><button class="add" onclick="add('${esc(p.id)}')">Add to Cart +</button></div></article>`).join(''):'<div class="notfound">No products found.</div>';renderCart();}
-function add(id){const p=products.find(x=>x.id===id);if(!p)return;const x=cart.find(x=>x.id===id);x?x.q++:cart.push({id,q:1});save();openCart();}function remove(id){cart=cart.filter(x=>x.id!==id);save();}function save(){localStorage.setItem('lionStoreCart',JSON.stringify(cart));renderCart();}
+
+<main class="page">
+  <p class="tag">OUR STORE</p><h1>Products</h1>
+  <div class="topline"><p class="sub">Only products live on this page. Choose a category from the menu or search.</p><input id="search" type="search" placeholder="🔎 Search products..." autocomplete="off"></div>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"><div class="notice">Loading products…</div></div>
+</main>
+
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<aside class="cart" id="cart"><div class="cartHead"><strong>Your Cart</strong><button onclick="closeCart()">✕</button></div><div id="items"></div><div class="cartBottom"><div><span>Total</span><b id="total">Rs. 0</b></div><button class="btn full" onclick="orderWhatsApp()">Order on WhatsApp</button></div></aside>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase.js"></script><script src="menu.js"></script>
+<script>
+let products=[];
+let cat=new URLSearchParams(location.search).get('cat')||'All';
+let cart=[];
+try{cart=(JSON.parse(localStorage.getItem('lionStoreCart')||'[]')||[]).map(x=>({id:x.id,q:Math.max(1,Number(x.q)||1)})).filter(x=>x.id);}catch(e){cart=[];}
+
+function showGridMessage(message,error=false){
+  const grid=document.getElementById('grid');
+  grid.innerHTML=`<div class="notice ${error?'error':''}" style="grid-column:1/-1">${esc(message)}</div>`;
+}
+
+async function loadFilters(){
+  let cats=defaultCategories.slice();
+  try{
+    const s=await db.ref('settings/categories').once('value');
+    if(s.exists()) cats=Object.entries(s.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(x=>x.enabled!==false&&x.name);
+  }catch(e){console.warn('Category load failed:',e);}
+  const names=[{name:'All'},...cats];
+  document.getElementById('filters').innerHTML=names.map(c=>`<button class="${cat===c.name?'active':''}" onclick="setCategory(${JSON.stringify(c.name)})">${esc(c.name)}</button>`).join('');
+}
+function setCategory(x){cat=x;loadFilters();render();}
+
+function loadProducts(){
+  showGridMessage('Loading products…');
+  db.ref('products').on('value',snap=>{
+    const value=snap.val()||{};
+    products=Object.entries(value).map(([id,p])=>({id,...(p||{})}));
+    render();
+  },err=>{
+    console.error('Firebase products error:',err);
+    products=[];
+    showGridMessage('Could not load products from Firebase. Check Realtime Database rules and firebase.js databaseURL.',true);
+  });
+}
+
+function render(){
+  const q=(document.getElementById('search').value||'').trim().toLowerCase();
+  const list=products.filter(p=>{
+    const category=p.c||p.category||'';
+    const name=p.n||p.name||'';
+    return (cat==='All'||category===cat) && `${name} ${category}`.toLowerCase().includes(q);
+  });
+  document.getElementById('grid').innerHTML=list.length?list.map(p=>{
+    const name=p.n||p.name||'Unnamed'; const category=p.c||p.category||''; const price=Number(p.p??p.price??0); const old=Number(p.o??p.oldPrice??0);
+    const image=p.img||p.image||'';
+    return `<article class="card"><div class="pic">${image?`<img src="${esc(image)}" alt="${esc(name)}" loading="lazy" onerror="this.remove()">`:esc(p.i||p.icon||'🛍️')}</div><div class="info"><small>${esc(category)}</small><h3>${esc(name)}</h3><div class="price">${money(price)} ${old>price?`<span class="old">${money(old)}</span>`:''}</div><button class="add" onclick="add(${JSON.stringify(p.id)})">Add to Cart +</button></div></article>`;
+  }).join(''):'<div class="notfound">No products found.</div>';
+  renderCart();
+}
+function add(id){const p=products.find(x=>x.id===id);if(!p)return;const x=cart.find(x=>x.id===id);x?x.q++:cart.push({id,q:1});save();openCart();}
+function remove(id){cart=cart.filter(x=>x.id!==id);save();}
+function save(){localStorage.setItem('lionStoreCart',JSON.stringify(cart));renderCart();}
 function cartLines(){const lines=[],missing=[];cart.forEach(x=>{const p=products.find(y=>y.id===x.id);if(p)lines.push({...p,q:x.q});else missing.push(x.id);});if(missing.length){cart=cart.filter(x=>!missing.includes(x.id));localStorage.setItem('lionStoreCart',JSON.stringify(cart));}return lines;}
-function renderCart(){const lines=cartLines();const count=lines.reduce((a,x)=>a+x.q,0),total=lines.reduce((a,x)=>a+x.p*x.q,0);document.getElementById('count').textContent=count;document.getElementById('total').textContent=money(total);document.getElementById('items').innerHTML=lines.length?lines.map(x=>`<div class="cartItem"><div><b>${esc(x.i||'🛍️')} ${esc(x.n)}</b><br><small>${x.q} × ${money(x.p)}</small></div><button class="remove" onclick="remove('${esc(x.id)}')">Remove</button></div>`).join(''):'<div class="empty">Your cart is empty.</div>';}
-function openCart(){document.getElementById('cart').classList.add('open');document.getElementById('overlay').classList.add('show')}function closeCart(){document.getElementById('cart').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
-function orderWhatsApp(){const lines=cartLines();if(!lines.length)return alert('Your cart is empty.');let text='Hello Lion Store! I want to order:%0A'+lines.map(x=>`• ${x.n} x${x.q} - ${money(x.p*x.q)}`).join('%0A')+`%0A%0ATotal: ${money(lines.reduce((a,x)=>a+x.p*x.q,0))}`;window.open('https://wa.me/94774662049?text='+text,'_blank')}
-loadFilters();render();
-</script></body></html>
+function renderCart(){const lines=cartLines();const count=lines.reduce((a,x)=>a+x.q,0);const total=lines.reduce((a,x)=>a+Number(x.p??x.price??0)*x.q,0);document.getElementById('count').textContent=count;document.getElementById('total').textContent=money(total);document.getElementById('items').innerHTML=lines.length?lines.map(x=>`<div class="cartItem"><div><b>${esc(x.i||x.icon||'🛍️')} ${esc(x.n||x.name)}</b><br><small>${x.q} × ${money(x.p??x.price)}</small></div><button class="remove" onclick="remove(${JSON.stringify(x.id)})">Remove</button></div>`).join(''):'<div class="empty">Your cart is empty.</div>';}
+function openCart(){document.getElementById('cart').classList.add('open');document.getElementById('overlay').classList.add('show');}
+function closeCart(){document.getElementById('cart').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
+function orderWhatsApp(){const lines=cartLines();if(!lines.length)return alert('Your cart is empty.');const text='Hello Lion Store! I want to order:\n'+lines.map(x=>`• ${x.n||x.name} x${x.q} - ${money(Number(x.p??x.price??0)*x.q)}`).join('\n')+`\n\nTotal: ${money(lines.reduce((a,x)=>a+Number(x.p??x.price??0)*x.q,0))}`;window.open('https://wa.me/94774662049?text='+encodeURIComponent(text),'_blank');}
+
+document.getElementById('search').addEventListener('input',render);
+loadFilters();loadProducts();render();
+</script>
+</body></html>
