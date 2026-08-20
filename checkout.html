@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com;">
+<title>Lion Store | Checkout</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.checkout{max-width:850px;margin:30px auto;padding:0 16px}.card{background:#111820;border:1px solid #27313b;border-radius:18px;padding:20px;margin:16px 0}
+label{display:block;margin:12px 0 6px;font-weight:600}input,select,textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #303b46;background:#0b1117;color:#fff}textarea{min-height:90px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.upload{border:1px dashed #53616e;border-radius:14px;padding:14px;margin:10px 0}.status{margin-top:8px;font-size:14px}.ok{color:#72df9b}.warn{color:#ffd166}.bad{color:#ff7777}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}.btn{border:0;border-radius:10px;padding:12px 16px;cursor:pointer}.notice{font-size:13px;line-height:1.5;color:#b8c2cc}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="nav"><a class="logo" href="index.html">Lion <span>Store</span></a><a class="cartBtn" href="products.html">← Products</a></header>
+
+<main class="checkout">
+<h1>Checkout</h1>
+<p class="notice">Identity documents are scanned in your browser. The original document image is not uploaded to Lion Store Firebase Storage. Only the information you confirm and the verification result are saved with your order.</p>
+
+<section class="card">
+<h2>Customer Details</h2>
+<div class="row">
+<div><label>Customer Name</label><input id="name" autocomplete="name" required></div>
+<div><label>Phone Number</label><input id="phone" autocomplete="tel" required></div>
+</div>
+<label>Address</label><textarea id="address" autocomplete="street-address"></textarea>
+<label>Post Code</label><input id="postCode" autocomplete="postal-code">
+<label>Payment Method</label>
+<select id="payment"><option value="cod">Cash on Delivery</option><option value="bank_transfer">Bank Transfer</option></select>
+</section>
+
+<section class="card">
+<h2>Identity Verification</h2>
+<label>Document Type</label>
+<select id="docType"><option value="NIC">NIC</option><option value="Passport">Passport</option><option value="Driving Licence">Driving Licence</option><option value="Other">Other</option></select>
+
+<div class="upload"><b>Document image</b><input id="docFile" type="file" accept="image/*" capture="environment"><div id="fileStatus" class="status">No document selected.</div></div>
+
+<div class="actions">
+<button class="btn" id="scanBtn" type="button">Scan Document</button>
+<button class="btn" id="clearBtn" type="button">Clear Scan</button>
+</div>
+
+<div class="card" style="margin-top:16px">
+<h3>OCR Result</h3>
+<div id="ocrStatus" class="status">Not scanned.</div>
+<label>Detected Name</label><input id="ocrName">
+<label>Detected Document Number</label><input id="ocrNumber">
+<label>Detected Date of Birth</label><input id="ocrDob">
+<label>Detected Address</label><textarea id="ocrAddress"></textarea>
+<p class="notice">OCR is an automated screening aid. It does not prove that a document is genuine or connect to a government identity database.</p>
+</div>
+
+<div class="card">
+<h3>Verification</h3>
+<div id="verificationStatus" class="status">Not checked.</div>
+<div class="actions">
+<button class="btn" id="verifyBtn" type="button">Check & Confirm</button>
+</div>
+</div>
+</section>
+
+<section class="card">
+<h2>Submit Order</h2>
+<p id="submitStatus" class="status"></p>
+<button class="btn" id="submitBtn" type="button">Submit Order</button>
+</section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+let file=null, ocrData=null, verification=null;
+
+const $=id=>document.getElementById(id);
+$('docFile').addEventListener('change',e=>{
+  file=e.target.files[0]||null;
+  $('fileStatus').textContent=file?`Selected: ${file.name}`:'No document selected.';
+  $('fileStatus').className='status '+(file?'ok':'');
+});
+
+$('scanBtn').onclick=async()=>{
+  if(!file){$('ocrStatus').textContent='Please select a document image first.';$('ocrStatus').className='status bad';return;}
+  $('ocrStatus').textContent='Scanning in your browser…';$('ocrStatus').className='status warn';
+  try{
+    const result=await Tesseract.recognize(file,'eng',{logger:m=>{
+      if(m.status==='recognizing text') $('ocrStatus').textContent=`Scanning… ${Math.round((m.progress||0)*100)}%`;
+    }});
+    const text=result.data.text||'';
+    ocrData={rawText:text,confidence:result.data.confidence||0};
+    const lines=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    $('ocrName').value=lines.find(x=>/[A-Za-z]{2,}\s+[A-Za-z]{2,}/.test(x))||'';
+    $('ocrNumber').value=(text.match(/[A-Z0-9]{6,16}/i)||[''])[0];
+    $('ocrDob').value=(text.match(/\b\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}\b/)||[''])[0];
+    $('ocrAddress').value=lines.slice(0,6).join(', ');
+    $('ocrStatus').textContent=`OCR complete. Confidence: ${Math.round(ocrData.confidence)}%`;
+    $('ocrStatus').className='status ok';
+  }catch(e){
+    $('ocrStatus').textContent='OCR failed. You can try a clearer image.';
+    $('ocrStatus').className='status bad';
+  }
+};
+
+$('clearBtn').onclick=()=>{
+  file=null;ocrData=null;verification=null;$('docFile').value='';
+  ['ocrName','ocrNumber','ocrDob','ocrAddress'].forEach(id=>$(id).value='');
+  $('fileStatus').textContent='No document selected.';
+  $('ocrStatus').textContent='Not scanned.';$('verificationStatus').textContent='Not checked.';
+};
+
+$('verifyBtn').onclick=()=>{
+  const entered=$('name').value.trim().toLowerCase();
+  const detected=$('ocrName').value.trim().toLowerCase();
+  if(!ocrData){$('verificationStatus').textContent='Scan the document first.';$('verificationStatus').className='status bad';return;}
+  const nameMatch=entered&&detected&&(entered===detected||entered.split(/\s+/).some(x=>x.length>2&&detected.includes(x)));
+  const confidence=ocrData.confidence||0;
+  verification=nameMatch&&confidence>=55?'verified_for_review':'needs_review';
+  $('verificationStatus').textContent=verification==='verified_for_review'?'🟢 Automated checks passed — pending admin review.':'🟡 Needs manual admin review.';
+  $('verificationStatus').className='status '+(verification==='verified_for_review'?'ok':'warn');
+};
+
+$('submitBtn').onclick=async()=>{
+  const name=$('name').value.trim(),phone=$('phone').value.trim(),address=$('address').value.trim(),postCode=$('postCode').value.trim();
+  if(!name||!phone||!address||!postCode){$('submitStatus').textContent='Please complete all customer fields.';$('submitStatus').className='status bad';return;}
+  if(!verification){$('submitStatus').textContent='Please scan and confirm the identity document.';$('submitStatus').className='status bad';return;}
+  const ref=db.ref('orders').push();
+  const data={
+    customer:{name,phone,address,postCode},
+    payment:{method:$('payment').value,status:'pending'},
+    verification:{
+      required:true,status:verification,documentType:$('docType').value,
+      ocr:{status:ocrData?'completed':'not_started',name:$('ocrName').value,documentNumber:$('ocrNumber').value,dateOfBirth:$('ocrDob').value,address:$('ocrAddress').value,confidence:ocrData?.confidence||0},
+      documents:{originalStored:false,front:{status:'browser_scanned'},back:{status:'not_uploaded'},additional:{status:'not_uploaded'}},
+      checks:{nameMatch:$('ocrName').value.trim().toLowerCase()===name.toLowerCase(),imageQuality:'browser_ocr'},
+      review:{status:'pending',note:''}
+    },
+    createdAt:firebase.database.ServerValue.TIMESTAMP
+  };
+  try{await ref.set(data);$('submitStatus').textContent=`Order submitted successfully. Order ID: ${ref.key}`;$('submitStatus').className='status ok';$('submitBtn').disabled=true;}
+  catch(e){$('submitStatus').textContent='Could not submit the order. Check Firebase connection/rules.';$('submitStatus').className='status bad';}
+};
+</script>
+</body>
+</html>
