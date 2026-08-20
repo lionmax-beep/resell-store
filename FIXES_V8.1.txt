@@ -1,0 +1,45 @@
+LION STORE V8.1 — BUG FIXES
+
+1. CRITICAL — database.rules.json was missing.
+   Added it back with rules that:
+   - Let anyone read products/settings/storeData (needed for the public store).
+   - Only let a signed-in owner/admin (checked against the admins node) write
+     products, store data, categories, and menu settings.
+   - Only let a user create the "admins/<uid>" owner record the very first
+     time (when no admins exist yet) or let an existing owner write it —
+     matches the "first registered account becomes OWNER" flow in admin.html.
+   - Validate that price/old price/stock are numbers >= 0 at the database
+     level (not just in the HTML form), so the checks can't be bypassed by
+     calling the Firebase REST API directly.
+
+   >> You must upload this file in Firebase Console -> Realtime Database ->
+      Rules, same as step 2 in README_BACKEND_V8.txt.
+
+2. Category rename no longer orphans products.
+   admin.html: renaming a category now updates the category name on every
+   product that belonged to the old name, so they stay visible under the
+   renamed filter.
+
+3. Deleting a category no longer hides its products.
+   admin.html: deleting a category now moves its products into an
+   "Uncategorized" category instead of leaving them unreachable.
+
+4. Cart prices no longer go stale.
+   products.html: the cart used to save a full copy of the product
+   (including price) into localStorage. Now it only stores {id, quantity}
+   and always looks up the live price/name/stock from the current product
+   list when rendering the cart or building the WhatsApp order message.
+   Existing carts saved in old format are auto-migrated on load.
+
+5. Deleted products no longer stay stuck in someone's cart.
+   products.html: if a product referenced in a saved cart no longer exists,
+   it's now silently dropped from the cart instead of showing broken data
+   or being orderable.
+
+6. Negative prices/stock blocked before saving.
+   add-product.html: added a client-side check rejecting negative price,
+   old price, or stock values (in addition to the database-level check in
+   rule #1 above).
+
+Everything else (HTML/CSS structure, permissions model, admin creation
+flow) is unchanged.

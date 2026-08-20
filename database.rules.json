@@ -1,0 +1,37 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "admins": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && ((auth.uid === $uid && !root.child('admins').exists()) || root.child('admins').child(auth.uid).child('role').val() === 'owner')",
+        ".validate": "newData.hasChildren(['email','role']) && (newData.child('role').val() === 'owner' || newData.child('role').val() === 'admin')"
+      }
+    },
+
+    "products": {
+      ".read": true,
+      "$productId": {
+        ".write": "auth != null && (root.child('admins').child(auth.uid).child('role').val() === 'owner' || root.child('admins').child(auth.uid).child('permissions').child('manageProducts').val() === true)",
+        "n": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length < 200" },
+        "p": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "o": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "stock": { ".validate": "newData.isNumber() && newData.val() >= 0" }
+      }
+    },
+
+    "storeData": {
+      ".read": true,
+      "$key": {
+        ".write": "auth != null && (root.child('admins').child(auth.uid).child('role').val() === 'owner' || root.child('admins').child(auth.uid).child('permissions').child('manageStoreData').val() === true)"
+      }
+    },
+
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && (root.child('admins').child(auth.uid).child('role').val() === 'owner' || root.child('admins').child(auth.uid).child('permissions').child('editMenu').val() === true)"
+    }
+  }
+}

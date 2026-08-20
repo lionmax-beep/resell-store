@@ -1,0 +1,43 @@
+LION STORE V8.2 — CYBER DEFENSE ADD-ONS
+
+What was added:
+
+1. Content-Security-Policy (CSP) — every page (index, products, admin,
+   add-product, store-data) now sends a CSP header via <meta> tag. It
+   blocks scripts/styles from loading from any domain except your own site,
+   Google/Firebase, and reCAPTCHA — stops classic "inject a <script> tag
+   from evil.com" XSS attacks even if some input escaping is ever missed.
+   No setup needed, works immediately.
+
+2. Admin login attempt limiting — admin.html now locks the login form for
+   5 minutes after 5 wrong password attempts in a row (tracked in the
+   browser). Slows down anyone guessing passwords. No setup needed.
+   Note: this is a client-side friction layer only (someone could clear
+   their browser storage to reset it) — real protection against brute
+   force ultimately comes from Firebase Authentication itself and from
+   using a strong password.
+
+3. Firebase App Check (reCAPTCHA v3) — code is in place (firebase.js +
+   a new script tag on every page) but NEEDS ONE-TIME SETUP before it
+   does anything:
+
+   a) Firebase Console -> Build -> App Check -> Apps -> register your web
+      app -> choose reCAPTCHA v3 -> it gives you a Site Key.
+   b) Open firebase.js, find this line near the top:
+        const APP_CHECK_SITE_KEY="PASTE_YOUR_RECAPTCHA_V3_SITE_KEY_HERE";
+      Replace the placeholder text with the real site key.
+   c) Re-upload firebase.js to GitHub Pages.
+   d) Test the site for a day or two — open the browser console and make
+      sure you don't see App Check errors.
+   e) Once it's clean, go back to Firebase Console -> App Check ->
+      Realtime Database -> turn on "Enforce". From that point on, only
+      requests coming from your real site (verified by reCAPTCHA) are
+      allowed to read/write your database — random scripts/bots hitting
+      your Firebase project directly get rejected even if they have your
+      firebaseConfig (which is public by design, see README_BACKEND_V8).
+
+   Until step (e) is done, App Check is inactive and the site behaves
+   exactly as before — safe to upload now and finish setup later.
+
+Nothing else was changed — permissions model, products, cart, and the
+earlier V8.1 fixes are untouched.
